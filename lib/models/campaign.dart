@@ -29,6 +29,10 @@ extension CampaignCategoryLabel on CampaignCategory {
         return 'आपात मदद';
     }
   }
+
+  /// ₹99 one-time registration fee applies to every category
+  /// EXCEPT Medical, which is free.
+  bool get requiresRegistrationFee => this != CampaignCategory.medical;
 }
 
 enum CampaignStatus {
@@ -87,6 +91,13 @@ class Campaign {
   final int daysLeft;
   final List<String> updates;
   final String? rejectionReason;
+  // One-time registration fee (₹99) — Loan, Education and Emergency
+  // campaigns. Medical campaigns are free (amount 0).
+  final bool registrationFeePaid;
+  final int registrationFeeAmount;
+  final String? registrationTxnId;
+
+  static const int registrationFee = 99;
 
   const Campaign({
     required this.id,
@@ -107,6 +118,9 @@ class Campaign {
     required this.daysLeft,
     this.updates = const [],
     this.rejectionReason,
+    this.registrationFeePaid = false,
+    this.registrationFeeAmount = 0,
+    this.registrationTxnId,
   });
 
   double get progress =>
@@ -120,6 +134,9 @@ class Campaign {
     int? donorCount,
     String? rejectionReason,
     List<String>? updates,
+    bool? registrationFeePaid,
+    int? registrationFeeAmount,
+    String? registrationTxnId,
   }) {
     return Campaign(
       id: id,
@@ -140,6 +157,10 @@ class Campaign {
       daysLeft: daysLeft,
       updates: updates ?? this.updates,
       rejectionReason: rejectionReason ?? this.rejectionReason,
+      registrationFeePaid: registrationFeePaid ?? this.registrationFeePaid,
+      registrationFeeAmount:
+          registrationFeeAmount ?? this.registrationFeeAmount,
+      registrationTxnId: registrationTxnId ?? this.registrationTxnId,
     );
   }
 
@@ -162,6 +183,9 @@ class Campaign {
     'daysLeft': daysLeft,
     'updates': updates,
     'rejectionReason': rejectionReason,
+    'registrationFeePaid': registrationFeePaid,
+    'registrationFeeAmount': registrationFeeAmount,
+    'registrationTxnId': registrationTxnId,
   };
 
   factory Campaign.fromJson(Map<String, dynamic> json) => Campaign(
@@ -183,6 +207,10 @@ class Campaign {
     daysLeft: json['daysLeft'] as int? ?? 0,
     updates: List<String>.from(json['updates'] as List? ?? const []),
     rejectionReason: json['rejectionReason'] as String?,
+    // Defaults keep old stored campaigns (saved before the fee) readable.
+    registrationFeePaid: json['registrationFeePaid'] as bool? ?? false,
+    registrationFeeAmount: json['registrationFeeAmount'] as int? ?? 0,
+    registrationTxnId: json['registrationTxnId'] as String?,
   );
 }
 

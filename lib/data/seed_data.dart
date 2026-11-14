@@ -26,6 +26,10 @@ List<Campaign> seedCampaigns() {
       imageUrl: 'https://picsum.photos/seed/donexia-loan1/800/500',
       createdAt: now.subtract(const Duration(days: 12)),
       daysLeft: 18,
+      // Grandfathered: seed loan campaigns count as fee-paid.
+      registrationFeePaid: true,
+      registrationFeeAmount: 99,
+      registrationTxnId: 'DNXRF-SEED-001',
       updates: [
         'Verified by Donexia admin — loan statement checked.',
         '₹50,000 raised in the first week. Thank you, donors!',
@@ -73,6 +77,10 @@ List<Campaign> seedCampaigns() {
       imageUrl: 'https://picsum.photos/seed/donexia-edu1/800/500',
       createdAt: now.subtract(const Duration(days: 9)),
       daysLeft: 21,
+      // Grandfathered: seed Education campaigns count as fee-paid.
+      registrationFeePaid: true,
+      registrationFeeAmount: 99,
+      registrationTxnId: 'DNXRF-SEED-003',
     ),
     Campaign(
       id: 'cmp_004',
@@ -94,6 +102,10 @@ List<Campaign> seedCampaigns() {
       imageUrl: 'https://picsum.photos/seed/donexia-emg1/800/500',
       createdAt: now.subtract(const Duration(days: 4)),
       daysLeft: 12,
+      // Grandfathered: seed Emergency campaigns count as fee-paid.
+      registrationFeePaid: true,
+      registrationFeeAmount: 99,
+      registrationTxnId: 'DNXRF-SEED-004',
     ),
     Campaign(
       id: 'cmp_005',
@@ -136,6 +148,10 @@ List<Campaign> seedCampaigns() {
       imageUrl: 'https://picsum.photos/seed/donexia-loan2/800/500',
       createdAt: now.subtract(const Duration(days: 3)),
       daysLeft: 27,
+      // Grandfathered: seed loan campaigns count as fee-paid.
+      registrationFeePaid: true,
+      registrationFeeAmount: 99,
+      registrationTxnId: 'DNXRF-SEED-006',
     ),
     Campaign(
       id: 'cmp_007',
@@ -157,6 +173,10 @@ List<Campaign> seedCampaigns() {
       imageUrl: 'https://picsum.photos/seed/donexia-edu2/800/500',
       createdAt: now.subtract(const Duration(days: 7)),
       daysLeft: 14,
+      // Grandfathered: seed Education campaigns count as fee-paid.
+      registrationFeePaid: true,
+      registrationFeeAmount: 99,
+      registrationTxnId: 'DNXRF-SEED-007',
     ),
     Campaign(
       id: 'cmp_008',
@@ -178,6 +198,10 @@ List<Campaign> seedCampaigns() {
       imageUrl: 'https://picsum.photos/seed/donexia-emg2/800/500',
       createdAt: now.subtract(const Duration(days: 5)),
       daysLeft: 10,
+      // Grandfathered: seed Emergency campaigns count as fee-paid.
+      registrationFeePaid: true,
+      registrationFeeAmount: 99,
+      registrationTxnId: 'DNXRF-SEED-008',
     ),
     Campaign(
       id: 'cmp_009',
@@ -199,6 +223,10 @@ List<Campaign> seedCampaigns() {
       imageUrl: 'https://picsum.photos/seed/donexia-loan3/800/500',
       createdAt: now.subtract(const Duration(days: 1)),
       daysLeft: 30,
+      // Grandfathered: seed loan campaigns count as fee-paid.
+      registrationFeePaid: true,
+      registrationFeeAmount: 99,
+      registrationTxnId: 'DNXRF-SEED-009',
     ),
     Campaign(
       id: 'cmp_010',

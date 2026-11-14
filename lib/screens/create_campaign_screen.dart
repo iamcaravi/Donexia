@@ -1,13 +1,16 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/strings.dart';
 import '../models/campaign.dart';
 import '../services/app_state.dart';
 import '../widgets/progress_bar.dart';
 
-/// 6-step campaign creation wizard:
+/// 6-step campaign creation wizard (7 when a registration fee applies):
 /// 1 Category · 2 Personal info · 3 Category form · 4 Payment destination
-/// (private) · 5 Preview/edit · 6 Consent & submit.
+/// (private) · 5 Preview/edit · 6 Registration fee (₹99 one-time, demo
+/// payment — Loan, Education & Emergency; Medical is free) · 7 Consent
+/// & submit.
 /// Payment details are kept private — never rendered on public screens.
 class CreateCampaignScreen extends StatefulWidget {
   const CreateCampaignScreen({super.key});
@@ -40,9 +43,36 @@ class _CreateCampaignScreenState extends State<CreateCampaignScreen> {
   final _accountHolder = TextEditingController();
   bool _consent = false;
   String? _error;
+  // ₹99 one-time registration fee — Loan, Education & Emergency.
+  // Medical campaigns are free. Demo payment (no real money),
+  // same pattern as the demo donation.
+  bool _feePaid = false;
+  String? _feeTxnId;
+  bool _feeProcessing = false;
+
+  /// Step index of the registration-fee step (all but Medical), or null.
+  int? get _feeStepIndex =>
+      _category.requiresRegistrationFee ? 5 : null;
+  int get _lastStepIndex =>
+      _category.requiresRegistrationFee ? 6 : 5;
+
+  Future<void> _payFee() async {
+    setState(() => _feeProcessing = true);
+    await Future.delayed(const Duration(seconds: 1)); // demo processing
+    if (!mounted) return;
+    final now = DateTime.now();
+    setState(() {
+      _feeProcessing = false;
+      _feePaid = true;
+      _feeTxnId =
+          'DNXRF${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}-${now.millisecondsSinceEpoch % 100000}';
+    });
+  }
 
   List<Step> _steps(BuildContext context) {
-    final banks = context.watch<AppState>().banks
+    final state = context.watch<AppState>();
+    final strings = Strings.of(state.locale.languageCode);
+    final banks = state.banks
         .where((b) => b.active)
         .map((b) => b.name)
         .toList();
@@ -52,7 +82,17 @@ class _CreateCampaignScreenState extends State<CreateCampaignScreen> {
         isActive: _step >= 0,
         content: RadioGroup<CampaignCategory>(
           groupValue: _category,
-          onChanged: (v) => setState(() => _category = v!),
+          onChanged: (v) => setState(() {
+            _category = v!;
+            // Switching to Medical? The fee step disappears and no
+            // fee applies. Switching between Loan / Education /
+            // Emergency keeps an already-paid fee.
+            if (!_category.requiresRegistrationFee) {
+              _feePaid = false;
+              _feeTxnId = null;
+            }
+            if (_step > _lastStepIndex) _step = _lastStepIndex;
+          }),
           child: Column(
             children: CampaignCategory.values
                 .map(
@@ -277,9 +317,100 @@ class _CreateCampaignScreenState extends State<CreateCampaignScreen> {
           ),
         ),
       ),
+      if (_category.requiresRegistrationFee)
+        Step(
+          title: const Text('Registration Fee'),
+          isActive: _step >= 5,
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DemoBanner(text: strings.feePaymentDemoNote),
+              const SizedBox(height: 12),
+              Text(
+                strings.registrationFeeTitle,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(strings.registrationFeeInfo),
+              const SizedBox(height: 12),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(strings.registrationFee),
+                          const Text(
+                            '₹99',
+                            style: TextStyle(fontWeight: FontWeight.w700),
+                          ),
+                        ],
+                      ),
+                      const Divider(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            strings.total,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const Text(
+                            '₹99',
+                            style: TextStyle(fontWeight: FontWeight.w800),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              if (_feePaid) ...[
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(strings.feePaidSuccess)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Txn ID: ${_feeTxnId ?? ''}',
+                  style: const TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ] else
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _feeProcessing ? null : _payFee,
+                    child: _feeProcessing
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(strings.payFeeDemo),
+                  ),
+                ),
+            ],
+          ),
+        ),
       Step(
         title: const Text('Consent & Submit'),
-        isActive: _step >= 5,
+        isActive: _step >= _lastStepIndex,
         content: Column(
           children: [
             CheckboxListTile(
@@ -311,6 +442,16 @@ class _CreateCampaignScreenState extends State<CreateCampaignScreen> {
       setState(() => _error = 'Please accept the consent checkbox.');
       return;
     }
+    // Loan / Education / Emergency need the ₹99 one-time
+    // registration fee first. Medical is free.
+    final needsFee = _category.requiresRegistrationFee;
+    if (needsFee && !_feePaid) {
+      setState(
+        () => _error =
+            'Please pay the ₹99 one-time registration fee (Demo) before submitting.',
+      );
+      return;
+    }
     final campaign = Campaign(
       id: 'cmp_${DateTime.now().millisecondsSinceEpoch}',
       title: _title.text.trim(),
@@ -328,6 +469,10 @@ class _CreateCampaignScreenState extends State<CreateCampaignScreen> {
       imageUrl: 'https://picsum.photos/seed/donexia-new/800/500',
       createdAt: DateTime.now(),
       daysLeft: 30,
+      registrationFeePaid: needsFee && _feePaid,
+      registrationFeeAmount:
+          needsFee ? Campaign.registrationFee : 0,
+      registrationTxnId: needsFee ? _feeTxnId : null,
     );
     await context.read<AppState>().submitCampaign(campaign);
     if (!mounted) return;
@@ -341,12 +486,25 @@ class _CreateCampaignScreenState extends State<CreateCampaignScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final steps = _steps(context);
     return Scaffold(
       appBar: AppBar(title: const Text('Create Campaign')),
       body: Stepper(
         currentStep: _step,
         onStepContinue: () {
-          if (_step < 5) {
+          // Can't leave the fee step until the demo fee is paid.
+          if (_feeStepIndex != null &&
+              _step == _feeStepIndex &&
+              !_feePaid) {
+            final strings = Strings.of(
+              context.read<AppState>().locale.languageCode,
+            );
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(strings.feeRequired)),
+            );
+            return;
+          }
+          if (_step < steps.length - 1) {
             setState(() => _step++);
           } else {
             _submit();
@@ -356,7 +514,7 @@ class _CreateCampaignScreenState extends State<CreateCampaignScreen> {
           if (_step > 0) setState(() => _step--);
         },
         onStepTapped: (i) => setState(() => _step = i),
-        steps: _steps(context),
+        steps: steps,
       ),
     );
   }

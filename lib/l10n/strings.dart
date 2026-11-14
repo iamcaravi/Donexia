@@ -38,6 +38,34 @@ class Strings {
           : 'DEMO OTP — no real SMS is sent';
   String get platformFee =>
       isHi ? 'प्लेटफ़ॉर्म शुल्क (1%)' : 'Platform fee (1%)';
+  // One-time registration fee — Loan, Education & Emergency (₹99).
+  // Medical campaigns are free.
+  String get registrationFeeTitle =>
+      isHi
+          ? 'रजिस्ट्रेशन फीस — ₹99 (सिर्फ़ एक बार)'
+          : 'One-time registration fee ₹99';
+  String get registrationFeeInfo =>
+      isHi
+          ? 'लोन, पढ़ाई और आपात मदद वाले अभियान के लिए एक बार ₹99 रजिस्ट्रेशन फीस लगती है। ये फीस सिर्फ़ एक बार देनी है और वापस नहीं होगी। इलाज वाले अभियान बिल्कुल मुफ़्त हैं।'
+          : 'Loan Relief, Education and Emergency campaigns need a one-time ₹99 registration fee. It is charged only once and is non-refundable. Medical campaigns are completely free.';
+  String get registrationFee =>
+      isHi ? 'रजिस्ट्रेशन फीस' : 'Registration fee';
+  String get total => isHi ? 'कुल' : 'Total';
+  String get payFeeDemo => isHi ? '₹99 दें (Demo)' : 'Pay ₹99 (Demo)';
+  String get feePaymentDemoNote =>
+      isHi
+          ? 'डेमो पेमेंट — असली पैसे नहीं कटेंगे।'
+          : 'Demo payment — no real money is charged.';
+  String get registrationFeePaid =>
+      isHi ? '₹99 रजिस्ट्रेशन फीस दी गई' : '₹99 registration fee paid';
+  String get feePaidSuccess =>
+      isHi
+          ? 'फीस मिल गई! (Demo) अब आप अभियान जमा कर सकते हैं।'
+          : 'Fee received! (Demo) You can now submit your campaign.';
+  String get feeRequired =>
+      isHi
+          ? 'आगे बढ़ने से पहले ₹99 रजिस्ट्रेशन फीस दें।'
+          : 'Please pay the ₹99 registration fee to continue.';
   String get adminPanel => isHi ? 'एडमिन पैनल' : 'Admin Panel';
   String get loanRelief => isHi ? 'लोन में मदद' : 'Loan Relief';
   String get medicalHelp => isHi ? 'इलाज के लिए' : 'Medical Help';

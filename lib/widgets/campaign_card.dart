@@ -146,6 +146,27 @@ class CampaignCard extends StatelessWidget {
                       color: DonexiaTheme.muted,
                     ),
                   ),
+                  if (campaign.registrationFeePaid) ...[
+                    const SizedBox(height: 6),
+                    const Row(
+                      children: [
+                        Icon(
+                          Icons.check_circle,
+                          size: 14,
+                          color: DonexiaTheme.primary,
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          '₹99 registration fee paid',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: DonexiaTheme.primary,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
